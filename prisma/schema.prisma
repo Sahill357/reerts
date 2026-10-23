@@ -1,0 +1,185 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Platform {
+  INSTAGRAM
+  TIKTOK
+  PINTEREST
+  LINKEDIN
+  THREADS
+  X
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  QUEUED
+  PUBLISHED
+  FAILED
+}
+
+enum PublishMode {
+  AUTO_PUBLISH
+  NOTIFICATION
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String
+  avatarUrl     String?
+  emailVerified Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  sessions      Session[]
+  workspaces    WorkspaceMember[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Workspace {
+  id            String            @id @default(cuid())
+  name          String
+  slug          String            @unique
+  timezone      String            @default("America/Los_Angeles")
+  plan          String            @default("GROWTH")
+  createdAt     DateTime          @default(now())
+  members       WorkspaceMember[]
+  profiles      SocialProfile[]
+  mediaItems    MediaItem[]
+  posts         ScheduledPost[]
+  linkInBioPage LinkInBioPage?
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        String    @default("OWNER")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+}
+
+model SocialProfile {
+  id             String          @id @default(cuid())
+  workspaceId    String
+  platform       Platform
+  handle         String
+  displayName    String
+  avatarUrl      String?
+  followersCount Int             @default(0)
+  autoPublish    Boolean         @default(true)
+  connected      Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  posts          ScheduledPost[]
+  timeSlots      SavedTimeSlot[]
+}
+
+model SavedTimeSlot {
+  id              String        @id @default(cuid())
+  profileId       String
+  dayOfWeek       Int           // 0 (Sun) - 6 (Sat)
+  hour            Int           // 0 - 23
+  minute          Int           // 0 - 59
+  engagementScore Float         @default(0.85)
+  profile         SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model MediaItem {
+  id            String          @id @default(cuid())
+  workspaceId   String
+  filename      String
+  objectKey     String          @unique
+  publicUrl     String
+  mediaType     MediaType       @default(IMAGE)
+  mimeType      String
+  sizeBytes     Int
+  width         Int
+  height        Int
+  aspectRatio   String          @default("1:1")
+  tags          String[]
+  notes         String          @default("")
+  starred       Boolean         @default(false)
+  usageCount    Int             @default(0)
+  createdAt     DateTime        @default(now())
+  workspace     Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  posts         ScheduledPost[]
+}
+
+model ScheduledPost {
+  id             String        @id @default(cuid())
+  workspaceId    String
+  profileId      String
+  mediaId        String?
+  caption        String
+  firstComment   String?
+  postType       String        @default("FEED")
+  publishMode    PublishMode   @default(AUTO_PUBLISH)
+  status         PostStatus    @default(SCHEDULED)
+  scheduledAt    DateTime
+  publishedAt    DateTime?
+  linkInBioUrl   String?
+  bullJobId      String?
+  failureReason  String?
+  impressions    Int           @default(0)
+  likes          Int           @default(0)
+  comments       Int           @default(0)
+  saves          Int           @default(0)
+  bioClicks      Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  workspace      Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  profile        SocialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  media          MediaItem?    @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+}
+
+model LinkInBioPage {
+  id             String          @id @default(cuid())
+  workspaceId    String          @unique
+  handle         String          @unique
+  title          String
+  bio            String
+  theme          String          @default("alabaster")
+  buttonRadius   String          @default("md")
+  featuredTitle  String?
+  featuredSub    String?
+  featuredUrl    String?
+  featuredCta    String?
+  updatedAt      DateTime        @updatedAt
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  buttons        LinkInBioItem[]
+}
+
+model LinkInBioItem {
+  id        String        @id @default(cuid())
+  pageId    String
+  label     String
+  url       String
+  clicks    Int           @default(0)
+  active    Boolean       @default(true)
+  sortOrder Int           @default(0)
+  page      LinkInBioPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+}
