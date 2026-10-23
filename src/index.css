@@ -1,13 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  /* Typography Tokens (2+1 Font Rule — Linear / Stripe / Vercel precision) */
-  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Typography Tokens (Inter primary per Zoract Global Styleguide) */
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
+  /* Zoract Design Tokens */
+  --color-zoract-frame: #202127;
+  --color-zoract-yellow: #FFFF00;
+  --color-zoract-banner: #1F1E2D;
+  --color-zoract-card: #F7F7F8;
+  --color-zoract-ink: #171717;
+  --color-zoract-muted: #85858F;
+  --color-zoract-divider: #ECECF0;
+  --color-zoract-twitter: #1DA1F2;
+
   /* 60-30-10 Surface & Canvas Color Tokens */
-  --color-canvas: #fafafa;
+  --color-canvas: #ffffff;
   --color-surface: #ffffff;
   --color-surface-subtle: #f4f4f5;
   --color-surface-hover: #f1f5f9;
@@ -15,12 +25,12 @@
   --color-border-strong: #d4d4d8;
 
   /* Text Hierarchy Tokens */
-  --color-ink: #09090b;
+  --color-ink: #171717;
   --color-ink-secondary: #52525b;
-  --color-ink-muted: #71717a;
+  --color-ink-muted: #85858F;
 
   /* Brand & Interactive Accent Tokens (10% Budget) */
-  --color-brand: #09090b;
+  --color-brand: #171717;
   --color-brand-hover: #27272a;
   --color-accent: #4f46e5;
   --color-accent-hover: #4338ca;

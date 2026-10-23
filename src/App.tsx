@@ -5,18 +5,6 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  Calendar,
-  Image as ImageIcon,
-  Inbox,
-  BarChart3,
-  Binoculars,
-  Link2,
-  Sparkles,
-  Layers,
-  Settings,
-  Plus,
-} from 'lucide-react';
-import {
   CalendarNote,
   CreatorCampaign,
   DailyMetricPoint,
@@ -31,7 +19,7 @@ import {
   SocialProfile,
   UserSession,
 } from './types/scheduler';
-import { Button, cn } from './components/ui/primitives';
+import { cn } from './components/ui/primitives';
 import { CalendarModule } from './components/calendar/CalendarModule';
 import { ComposerModal } from './components/composer/ComposerModal';
 import { MediaLibraryModule } from './components/media/MediaLibraryModule';
@@ -41,11 +29,18 @@ import { AnalyticsModule } from './components/analytics/AnalyticsModule';
 import { SettingsModule } from './components/settings/SettingsModule';
 import { SocialInboxModule } from './components/inbox/SocialInboxModule';
 import { CreatorHomeModule } from './components/creator/CreatorHomeModule';
+import { ZoractDashboardModule } from './components/dashboard/ZoractDashboardModule';
 
-type ActiveModule =
+export type ActiveModule =
+  | 'dashboard'
+  | 'feeds'
+  | 'tasks'
+  | 'publishing'
+  | 'inbox'
+  | 'people'
+  | 'reviews'
   | 'calendar'
   | 'media'
-  | 'inbox'
   | 'analytics'
   | 'custom-analytics'
   | 'bio'
@@ -53,9 +48,186 @@ type ActiveModule =
   | 'queue'
   | 'settings';
 
+/* Exact Pixel-Matched Outline Icons for Zoract Sidebar & Header */
+
+function ZoractLogoMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d="M11.35 1.45a1.2 1.2 0 0 1 1.3 0l9.85 6.85a1.15 1.15 0 0 1 0 1.9L12.65 17.05a1.2 1.2 0 0 1-1.3 0L1.5 10.2a1.15 1.15 0 0 1 0-1.9l9.85-6.85Z"
+        fill="#111111"
+      />
+      <path
+        d="M2.1 15.2 11.35 21.6a1.2 1.2 0 0 0 1.3 0l9.25-6.4"
+        stroke="#111111"
+        strokeWidth="3.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function BellNotificationIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 18 18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M13.5 6.75a4.5 4.5 0 1 0-9 0c0 4.5-2 5.75-2 5.75h13s-2-1.25-2-5.75" />
+      <path d="M10.3 15.2a1.5 1.5 0 0 1-2.6 0" />
+    </svg>
+  );
+}
+
+function DashboardGridIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.35"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="2.2" y="2.2" width="4.6" height="4.6" rx="1" />
+      <rect x="9.2" y="2.2" width="4.6" height="4.6" rx="1" />
+      <rect x="2.2" y="9.2" width="4.6" height="4.6" rx="1" />
+      <rect x="9.2" y="9.2" width="4.6" height="4.6" rx="1" />
+    </svg>
+  );
+}
+
+function FeedsBarsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.35"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="3" y1="4.5" x2="7.5" y2="4.5" />
+      <line x1="3" y1="8" x2="12.5" y2="8" />
+      <line x1="3" y1="11.5" x2="10" y2="11.5" />
+    </svg>
+  );
+}
+
+function TasksPinIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M5.2 2.2h5.6l-.55 3.5 1.75 1.85v1.15H4V7.55l1.75-1.85L5.2 2.2z" />
+      <path d="M8 8.7v5.1" />
+    </svg>
+  );
+}
+
+function PublishingSendIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M14.2 1.8 7.3 8.7" />
+      <path d="m14.2 1.8-4.4 12.4-2.5-5.5-5.5-2.5 12.4-4.4z" />
+    </svg>
+  );
+}
+
+function InboxBubbleIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M14 7.7a6 6 0 0 1-9.1 5.1L2 13.7l.9-2.7A6 6 0 1 1 14 7.7z" />
+      <circle cx="5.8" cy="7.7" r="0.6" fill="currentColor" stroke="none" />
+      <circle cx="8" cy="7.7" r="0.6" fill="currentColor" stroke="none" />
+      <circle cx="10.2" cy="7.7" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function PeopleUserIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <circle cx="8" cy="5.2" r="2.7" />
+      <path d="M3.2 13.5c0-2.4 2.15-4.1 4.8-4.1s4.8 1.7 4.8 4.1" />
+    </svg>
+  );
+}
+
+function ReviewsStarIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <polygon points="8 2 9.85 5.75 14 6.35 11 9.25 11.7 13.4 8 11.45 4.3 13.4 5 9.25 2 6.35 6.15 5.75 8 2" />
+    </svg>
+  );
+}
+
 export default function App() {
-  const [activeModule, setActiveModule] = useState<ActiveModule>('calendar');
-  const [loading, setLoading] = useState<boolean>(true);
+  const [activeModule, setActiveModule] = useState<ActiveModule>('dashboard');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [peopleSubTab, setPeopleSubTab] = useState<'creator' | 'bio'>('creator');
+  const [reviewsSubTab, setReviewsSubTab] = useState<
+    'analytics' | 'custom-analytics' | 'settings'
+  >('analytics');
 
   const [session, setSession] = useState<UserSession | null>(null);
   const [profiles, setProfiles] = useState<SocialProfile[]>([]);
@@ -130,8 +302,8 @@ export default function App() {
       setDailyMetrics(analyticsData.dailyMetrics || []);
       setInboxThreads(inboxData.threads || []);
       setCreatorCampaigns(creatorData.campaigns || []);
-    } finally {
-      setLoading(false);
+    } catch {
+      // Keep UI responsive even if initial fetch is delayed
     }
   }, []);
 
@@ -333,264 +505,362 @@ export default function App() {
     await fetchAllWorkspaceData();
   };
 
-  const NAV_ITEMS: {
+  /* Exact 7 Zoract Sidebar Navigation Items in Exact Reference Order */
+  const ZORACT_NAV_ITEMS: {
     id: ActiveModule;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
   }[] = [
-    { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'media', label: 'Media', icon: ImageIcon },
-    { id: 'inbox', label: 'Social Inbox', icon: Inbox },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'custom-analytics', label: 'Custom Analytics', icon: Binoculars },
-    { id: 'bio', label: 'Link in Bio', icon: Link2 },
-    { id: 'creator', label: 'Creator Home', icon: Sparkles },
-    { id: 'queue', label: 'Publishing Queue', icon: Layers },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'dashboard', label: 'Dashboard', icon: DashboardGridIcon },
+    { id: 'feeds', label: 'Feeds', icon: FeedsBarsIcon },
+    { id: 'tasks', label: 'Tasks', icon: TasksPinIcon },
+    { id: 'publishing', label: 'Publishing', icon: PublishingSendIcon },
+    { id: 'inbox', label: 'Inbox', icon: InboxBubbleIcon },
+    { id: 'people', label: 'People', icon: PeopleUserIcon },
+    { id: 'reviews', label: 'Reviews', icon: ReviewsStarIcon },
   ];
 
+  const isSidebarItemActive = (itemId: ActiveModule) => {
+    if (activeModule === itemId) return true;
+    if (itemId === 'feeds' && activeModule === 'media') return true;
+    if (itemId === 'tasks' && activeModule === 'calendar') return true;
+    if (itemId === 'publishing' && activeModule === 'queue') return true;
+    if (itemId === 'people' && (activeModule === 'creator' || activeModule === 'bio'))
+      return true;
+    if (
+      itemId === 'reviews' &&
+      (activeModule === 'analytics' ||
+        activeModule === 'custom-analytics' ||
+        activeModule === 'settings')
+    )
+      return true;
+    return false;
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-canvas)] text-[var(--color-ink)]">
-      {/* Strict 3-Zone Top Bar Contract */}
-      <header className="h-[var(--spacing-header)] flex items-center justify-between gap-8 px-6 bg-[var(--color-surface)] border-b border-[var(--color-border-hairline)] shrink-0">
-        {/* Zone 1: Brand Logo */}
-        <a
-          href="#calendar"
-          onClick={(e) => {
-            e.preventDefault();
-            setActiveModule('calendar');
-          }}
-          aria-label="Reerts"
-          className="inline-flex items-center text-lg font-bold tracking-tight text-[var(--color-ink)] font-display whitespace-nowrap shrink-0 group focus:outline-none"
-        >
-          <span className="h-10 py-0.5 inline-flex items-center justify-center shrink-0">
-            <img
-              src="/assets/aistudio/Reerts_4d11e25f.svg"
-              alt="Reerts"
-              className="h-9 w-auto max-w-[140px] object-contain transition-transform group-hover:scale-[1.03]"
-            />
-          </span>
-        </a>
-
-        {/* Zone 2: 5 concise single-line navigation links */}
-        <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-[var(--color-ink-secondary)]">
-          {[
-            { id: 'calendar' as const, label: 'Calendar' },
-            { id: 'media' as const, label: 'Media' },
-            { id: 'inbox' as const, label: 'Social Inbox' },
-            { id: 'analytics' as const, label: 'Analytics' },
-            { id: 'bio' as const, label: 'Link in Bio' },
-          ].map((item) => (
+    /* Full-bleed pure white application background */
+    <div className="min-h-screen w-full bg-white flex flex-col font-sans text-[#171717]">
+      {/* White Application Canvas */}
+      <div className="flex-1 flex flex-col bg-white w-full overflow-hidden">
+        {/* Top Navigation Bar (54px tall) */}
+        <header className="h-[54px] flex items-center justify-between pl-[20px] pr-[24px] bg-white border-b border-[#F4F4F6] shrink-0">
+          {/* Left: Black geometric stacked layers logo mark + "Zoract" */}
+          <div className="flex items-center gap-2">
             <button
-              key={item.id}
-              onClick={() => setActiveModule(item.id)}
-              className={cn(
-                'py-1 transition-colors whitespace-nowrap shrink-0 cursor-pointer',
-                activeModule === item.id
-                  ? 'text-[var(--color-ink)] font-semibold underline underline-offset-8'
-                  : 'hover:text-[var(--color-ink)]'
-              )}
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="Toggle navigation menu"
+              className="sm:hidden p-1.5 rounded-md text-[#171717] hover:bg-[#F7F7F8]"
             >
-              {item.label}
+              <FeedsBarsIcon className="w-5 h-5" />
             </button>
-          ))}
-        </nav>
 
-        {/* Zone 3: 1 Primary Action */}
-        <div className="flex items-center gap-3 shrink-0">
-          <Button variant="primary" size="md" onClick={() => handleOpenComposer()}>
-            <Plus className="w-3.5 h-3.5" />
-            <span>Create Post</span>
-          </Button>
-        </div>
-      </header>
-
-      {/* Main Workspace Container: Left Sidebar + Viewport */}
-      <div className="flex-1 flex min-h-0">
-        {/* Left Workspace Navigation Sidebar */}
-        <aside className="hidden sm:flex w-60 shrink-0 bg-[var(--color-surface)] border-r border-[var(--color-border-hairline)] p-3.5 flex-col justify-between">
-          <div className="space-y-1">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const active = activeModule === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveModule(item.id)}
-                  className={cn(
-                    'w-full flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-[var(--radius-md)] transition-colors whitespace-nowrap shrink-0 cursor-pointer',
-                    active
-                      ? 'bg-[var(--color-accent-soft)] text-[var(--color-accent)] font-semibold'
-                      : 'text-[var(--color-ink-secondary)] hover:text-[var(--color-ink)] hover:bg-[var(--color-surface-subtle)]/70'
-                  )}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
+            <a
+              href="#dashboard"
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveModule('dashboard');
+              }}
+              aria-label="Reerts"
+              className="inline-flex items-center focus:outline-none"
+            >
+              <img
+                src="/assets/aistudio/Reerts.svg"
+                alt="Reerts"
+                className="h-9 w-auto max-w-[140px] object-contain shrink-0"
+              />
+            </a>
           </div>
 
-          {/* Access Group Footer matching screenshot bottom-left */}
-          {session && (
-            <div className="pt-3 border-t border-[var(--color-border-hairline)]">
-              <div className="flex items-center gap-2.5 p-2 rounded-[var(--radius-md)] hover:bg-[var(--color-surface-subtle)] transition-colors">
-                <div className="w-8 h-8 rounded-[var(--radius-sm)] border border-[var(--color-accent)] text-[var(--color-accent)] font-mono text-xs font-semibold flex items-center justify-center shrink-0">
-                  MG
+          {/* Right: Notification Bell with red dot + Circular User Avatar + "Albert Cook" */}
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={() => setActiveModule('inbox')}
+              aria-label="Notifications"
+              className="relative p-1 text-[#85858F] hover:text-[#171717] transition-colors cursor-pointer"
+            >
+              <BellNotificationIcon className="w-[16px] h-[16px]" />
+              <span
+                aria-hidden="true"
+                className="absolute top-[3px] right-[3px] w-[5px] h-[5px] rounded-full bg-[#FF5A5A] ring-1 ring-white"
+              />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveModule('reviews');
+                setReviewsSubTab('settings');
+              }}
+              className="flex items-center ml-[22px] cursor-pointer focus:outline-none"
+            >
+              <img
+                src="/assets/zoract/avatar-albert.png"
+                alt="Albert Cook"
+                className="w-[34px] h-[34px] rounded-full object-cover shrink-0"
+              />
+              <span className="text-[12px] font-semibold text-[#171717] ml-[9px] tracking-[-0.01em] whitespace-nowrap">
+                Albert Cook
+              </span>
+            </button>
+          </div>
+        </header>
+
+        {/* Main Workspace Container: Left Sidebar + Dashboard Canvas */}
+        <div className="flex-1 flex min-h-0 relative">
+          {/* Left Sidebar Navigation (174px wide inside white canvas -> 195px from left viewport edge) */}
+          <aside
+            className={cn(
+              'w-[174px] shrink-0 bg-white border-r border-[#F3F3F5] px-[10px] pt-[15px] pb-4 flex-col justify-between',
+              mobileMenuOpen
+                ? 'flex absolute inset-y-0 left-0 z-30 shadow-xl sm:static sm:shadow-none'
+                : 'hidden sm:flex'
+            )}
+          >
+            <nav aria-label="Main Navigation" className="flex flex-col">
+              {ZORACT_NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const active = isSidebarItemActive(item.id);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveModule(item.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={cn(
+                      'w-full h-[39px] flex items-center gap-[10px] px-[11px] rounded-[8px] text-[12px] transition-colors cursor-pointer whitespace-nowrap',
+                      active
+                        ? 'bg-[#FFFF00] text-[#171717] font-semibold'
+                        : 'text-[#85858F] font-medium hover:text-[#171717] hover:bg-[#F7F7F8]'
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        'w-[15px] h-[15px] shrink-0',
+                        active ? 'text-[#171717]' : 'text-[#85858F]'
+                      )}
+                    />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+
+          {/* Main Dashboard / Module Content Area */}
+          <main className="flex-1 min-w-0 bg-white pt-[15px] pl-[18px] pr-[16px] pb-[17px] overflow-y-auto">
+            {activeModule === 'dashboard' && (
+              <ZoractDashboardModule
+                onCreatePost={() => handleOpenComposer()}
+                onNavigateToSchedule={() => setActiveModule('tasks')}
+                onNavigateToApprovals={() => setActiveModule('publishing')}
+              />
+            )}
+
+            {(activeModule === 'feeds' || activeModule === 'media') && (
+              <MediaLibraryModule
+                mediaItems={mediaItems}
+                onPresignAndUpload={handlePresignAndUpload}
+                onUpdateMedia={handleUpdateMedia}
+                onDeleteMedia={handleDeleteMedia}
+                onScheduleWithMedia={(mediaId) => handleOpenComposer({ mediaId })}
+              />
+            )}
+
+            {(activeModule === 'tasks' || activeModule === 'calendar') && (
+              <CalendarModule
+                profiles={profiles}
+                timeSlots={timeSlots}
+                calendarNotes={calendarNotes}
+                mediaItems={mediaItems}
+                posts={posts}
+                timezone={session?.workspace.timezone || 'Asia/Calcutta'}
+                postsLeftInCycle={session?.workspace.postsLeftInCycle || 24}
+                onOpenComposer={handleOpenComposer}
+                onSwapPosts={handleSwapPosts}
+                onPublishNow={handlePublishNow}
+                onAddCalendarNote={handleAddCalendarNote}
+                onDeleteCalendarNote={handleDeleteCalendarNote}
+                onNavigateToMedia={() => setActiveModule('feeds')}
+              />
+            )}
+
+            {(activeModule === 'publishing' || activeModule === 'queue') && (
+              <PublishingQueueModule
+                queueJobs={queueJobs}
+                posts={posts}
+                profiles={profiles}
+                onPublishNow={handlePublishNow}
+                onRetryJob={handleRetryJob}
+              />
+            )}
+
+            {activeModule === 'inbox' && (
+              <SocialInboxModule
+                threads={inboxThreads}
+                profiles={profiles}
+                posts={posts}
+                mediaItems={mediaItems}
+                onReplyThread={handleReplyThread}
+                onUpdateThreadStatus={handleUpdateThreadStatus}
+              />
+            )}
+
+            {(activeModule === 'people' ||
+              activeModule === 'creator' ||
+              activeModule === 'bio') && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-[#ECECF0] pb-2">
+                  <button
+                    type="button"
+                    onClick={() => setPeopleSubTab('creator')}
+                    className={cn(
+                      'px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-colors cursor-pointer',
+                      peopleSubTab === 'creator'
+                        ? 'bg-[#FFFF00] text-[#171717]'
+                        : 'text-[#85858F] hover:text-[#171717]'
+                    )}
+                  >
+                    Creator Directory
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPeopleSubTab('bio')}
+                    className={cn(
+                      'px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-colors cursor-pointer',
+                      peopleSubTab === 'bio'
+                        ? 'bg-[#FFFF00] text-[#171717]'
+                        : 'text-[#85858F] hover:text-[#171717]'
+                    )}
+                  >
+                    Link in Bio
+                  </button>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-[var(--color-ink)] truncate">
-                    {session.workspace.groupName}
-                  </p>
-                  <p className="text-[11px] font-mono tabular-nums text-[var(--color-ink-muted)] truncate">
-                    {profiles.length} Social Profiles
-                  </p>
-                </div>
+
+                {peopleSubTab === 'bio' && bioConfig ? (
+                  <LinkInBioModule
+                    config={bioConfig}
+                    posts={posts}
+                    mediaItems={mediaItems}
+                    onUpdateConfig={handleUpdateBioConfig}
+                    onUpdatePostUrl={handleUpdatePostUrl}
+                    onRecordBioClick={handleRecordBioClick}
+                    onNavigateToAnalytics={() => {
+                      setActiveModule('reviews');
+                      setReviewsSubTab('analytics');
+                    }}
+                  />
+                ) : (
+                  session && (
+                    <CreatorHomeModule
+                      session={session}
+                      profiles={profiles}
+                      mediaItems={mediaItems}
+                      campaigns={creatorCampaigns}
+                      onApplyCampaign={handleApplyCampaign}
+                    />
+                  )
+                )}
               </div>
-            </div>
-          )}
-        </aside>
+            )}
 
-        {/* Active Module Viewport */}
-        <main className="flex-1 p-6 overflow-y-auto min-w-0">
-          {loading ? (
-            <div className="space-y-4">
-              <div className="h-10 bg-[var(--color-surface-subtle)] rounded-[var(--radius-md)] animate-pulse" />
-              <div className="h-[520px] bg-[var(--color-surface-subtle)] rounded-[var(--radius-lg)] animate-pulse" />
-            </div>
-          ) : (
-            <>
-              {activeModule === 'calendar' && (
-                <CalendarModule
-                  profiles={profiles}
-                  timeSlots={timeSlots}
-                  calendarNotes={calendarNotes}
-                  mediaItems={mediaItems}
-                  posts={posts}
-                  timezone={session?.workspace.timezone || 'Asia/Calcutta'}
-                  postsLeftInCycle={session?.workspace.postsLeftInCycle || 24}
-                  onOpenComposer={handleOpenComposer}
-                  onSwapPosts={handleSwapPosts}
-                  onPublishNow={handlePublishNow}
-                  onAddCalendarNote={handleAddCalendarNote}
-                  onDeleteCalendarNote={handleDeleteCalendarNote}
-                  onNavigateToMedia={() => setActiveModule('media')}
-                />
-              )}
+            {(activeModule === 'reviews' ||
+              activeModule === 'analytics' ||
+              activeModule === 'custom-analytics' ||
+              activeModule === 'settings') && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-[#ECECF0] pb-2">
+                  <button
+                    type="button"
+                    onClick={() => setReviewsSubTab('analytics')}
+                    className={cn(
+                      'px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-colors cursor-pointer',
+                      reviewsSubTab === 'analytics'
+                        ? 'bg-[#FFFF00] text-[#171717]'
+                        : 'text-[#85858F] hover:text-[#171717]'
+                    )}
+                  >
+                    Performance Reviews
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReviewsSubTab('custom-analytics')}
+                    className={cn(
+                      'px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-colors cursor-pointer',
+                      reviewsSubTab === 'custom-analytics'
+                        ? 'bg-[#FFFF00] text-[#171717]'
+                        : 'text-[#85858F] hover:text-[#171717]'
+                    )}
+                  >
+                    Custom Reports
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReviewsSubTab('settings')}
+                    className={cn(
+                      'px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-colors cursor-pointer',
+                      reviewsSubTab === 'settings'
+                        ? 'bg-[#FFFF00] text-[#171717]'
+                        : 'text-[#85858F] hover:text-[#171717]'
+                    )}
+                  >
+                    Workspace Settings
+                  </button>
+                </div>
 
-              {activeModule === 'media' && (
-                <MediaLibraryModule
-                  mediaItems={mediaItems}
-                  onPresignAndUpload={handlePresignAndUpload}
-                  onUpdateMedia={handleUpdateMedia}
-                  onDeleteMedia={handleDeleteMedia}
-                  onScheduleWithMedia={(mediaId) => handleOpenComposer({ mediaId })}
-                />
-              )}
-
-              {activeModule === 'inbox' && (
-                <SocialInboxModule
-                  threads={inboxThreads}
-                  profiles={profiles}
-                  posts={posts}
-                  mediaItems={mediaItems}
-                  onReplyThread={handleReplyThread}
-                  onUpdateThreadStatus={handleUpdateThreadStatus}
-                />
-              )}
-
-              {activeModule === 'analytics' && (
-                <AnalyticsModule
-                  key="standard-analytics"
-                  dailyMetrics={dailyMetrics}
-                  posts={posts}
-                  profiles={profiles}
-                  bioButtons={bioConfig?.buttons || []}
-                  initialTab="overview"
-                />
-              )}
-
-              {activeModule === 'custom-analytics' && (
-                <AnalyticsModule
-                  key="custom-analytics"
-                  dailyMetrics={dailyMetrics}
-                  posts={posts}
-                  profiles={profiles}
-                  bioButtons={bioConfig?.buttons || []}
-                  initialTab="custom"
-                />
-              )}
-
-              {activeModule === 'bio' && bioConfig && (
-                <LinkInBioModule
-                  config={bioConfig}
-                  posts={posts}
-                  mediaItems={mediaItems}
-                  onUpdateConfig={handleUpdateBioConfig}
-                  onUpdatePostUrl={handleUpdatePostUrl}
-                  onRecordBioClick={handleRecordBioClick}
-                  onNavigateToAnalytics={() => setActiveModule('analytics')}
-                />
-              )}
-
-              {activeModule === 'creator' && session && (
-                <CreatorHomeModule
-                  session={session}
-                  profiles={profiles}
-                  mediaItems={mediaItems}
-                  campaigns={creatorCampaigns}
-                  onApplyCampaign={handleApplyCampaign}
-                />
-              )}
-
-              {activeModule === 'queue' && (
-                <PublishingQueueModule
-                  queueJobs={queueJobs}
-                  posts={posts}
-                  profiles={profiles}
-                  onPublishNow={handlePublishNow}
-                  onRetryJob={handleRetryJob}
-                />
-              )}
-
-              {activeModule === 'settings' && session && (
-                <SettingsModule
-                  session={session}
-                  profiles={profiles}
-                  timeSlots={timeSlots}
-                  onToggleProfileAutoPublish={async (profileId, nextVal) => {
-                    await fetch(`/api/profiles/${profileId}`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ autoPublish: nextVal }),
-                    });
-                    await fetchAllWorkspaceData();
-                  }}
-                  onAddTimeSlot={async (slot) => {
-                    await fetch('/api/time-slots', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(slot),
-                    });
-                    await fetchAllWorkspaceData();
-                  }}
-                  onDeleteTimeSlot={async (id) => {
-                    await fetch(`/api/time-slots/${id}`, { method: 'DELETE' });
-                    await fetchAllWorkspaceData();
-                  }}
-                  onUpdateWorkspace={async (ws) => {
-                    await fetch('/api/auth/workspace', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(ws),
-                    });
-                    await fetchAllWorkspaceData();
-                  }}
-                />
-              )}
-            </>
-          )}
-        </main>
+                {reviewsSubTab === 'settings' && session ? (
+                  <SettingsModule
+                    session={session}
+                    profiles={profiles}
+                    timeSlots={timeSlots}
+                    onToggleProfileAutoPublish={async (profileId, nextVal) => {
+                      await fetch(`/api/profiles/${profileId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ autoPublish: nextVal }),
+                      });
+                      await fetchAllWorkspaceData();
+                    }}
+                    onAddTimeSlot={async (slot) => {
+                      await fetch('/api/time-slots', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(slot),
+                      });
+                      await fetchAllWorkspaceData();
+                    }}
+                    onDeleteTimeSlot={async (id) => {
+                      await fetch(`/api/time-slots/${id}`, { method: 'DELETE' });
+                      await fetchAllWorkspaceData();
+                    }}
+                    onUpdateWorkspace={async (ws) => {
+                      await fetch('/api/auth/workspace', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(ws),
+                      });
+                      await fetchAllWorkspaceData();
+                    }}
+                  />
+                ) : (
+                  <AnalyticsModule
+                    key={reviewsSubTab}
+                    dailyMetrics={dailyMetrics}
+                    posts={posts}
+                    profiles={profiles}
+                    bioButtons={bioConfig?.buttons || []}
+                    initialTab={
+                      reviewsSubTab === 'custom-analytics' ? 'custom' : 'overview'
+                    }
+                  />
+                )}
+              </div>
+            )}
+          </main>
+        </div>
       </div>
 
       {/* Multi-Platform Post Composer Modal */}
